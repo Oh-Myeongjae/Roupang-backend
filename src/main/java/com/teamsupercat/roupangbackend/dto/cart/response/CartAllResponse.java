@@ -19,7 +19,9 @@ public class CartAllResponse {
     private String description;
     private Long price;
     private Integer amount;
+    private Integer productStock;
     private String createdAt;
+    private String optionDetail;
 
     public CartAllResponse toEntity(Integer memberId, Cart cart) {
         return CartAllResponse.builder()
@@ -33,7 +35,9 @@ public class CartAllResponse {
                 .description(cart.getProductIdx().getDescription())
                 .price(cart.getProductIdx().getPrice())
                 .amount(cart.getAmount())
+                .productStock(cart.getProductIdx().getStock())
                 .createdAt(cart.getCreatedAt().toString())
+                .optionDetail(cart.getOptionDetail())
                 .build();
     }
 }

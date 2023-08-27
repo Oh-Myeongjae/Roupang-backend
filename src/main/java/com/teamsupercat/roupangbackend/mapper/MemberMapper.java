@@ -1,10 +1,13 @@
 package com.teamsupercat.roupangbackend.mapper;
 
 import com.teamsupercat.roupangbackend.dto.member.SignupRequestDto;
+import com.teamsupercat.roupangbackend.entity.LoginAttempt;
 import com.teamsupercat.roupangbackend.entity.Member;
 import com.teamsupercat.roupangbackend.entity.RefreshToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 @Component
 @RequiredArgsConstructor
@@ -31,5 +34,15 @@ public class MemberMapper {
                .isDeleted(false)
                .build();
        return refreshToken;
+    }
+
+    public LoginAttempt makeLoginFail(String email, String domain){
+        return LoginAttempt.builder()
+                .email(email)
+                .domain(domain)
+                .trial(0)
+                .allowedLoginTime(Instant.now())
+                .isDeleted(false)
+                .build();
     }
 }

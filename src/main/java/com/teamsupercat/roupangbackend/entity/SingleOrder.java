@@ -1,7 +1,9 @@
 package com.teamsupercat.roupangbackend.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import net.bytebuddy.implementation.bind.annotation.Default;
+import net.bytebuddy.implementation.bind.annotation.DefaultCall;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -9,6 +11,9 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "Single_orders", schema = "supercat")
 public class SingleOrder {
     @Id
@@ -30,7 +35,10 @@ public class SingleOrder {
     @Column(name = "order_date", nullable = false)
     private Instant orderDate;
 
+    @Builder.Default()
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
+    @Column(name = "option_detail")
+    private String optionDetail;
 }

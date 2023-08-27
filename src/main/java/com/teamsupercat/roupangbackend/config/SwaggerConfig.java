@@ -1,11 +1,21 @@
 package com.teamsupercat.roupangbackend.config;
 
+import com.fasterxml.classmate.TypeResolver;
+import com.teamsupercat.roupangbackend.dto.CustomUserDetail.CustomUserDetail;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.userdetails.UserDetails;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.schema.AlternateTypeRules;
 import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
@@ -19,7 +29,10 @@ import java.util.List;
 
 @Configuration
 @EnableSwagger2
+@RequiredArgsConstructor
 public class SwaggerConfig {
+
+    private final TypeResolver typeResolver;
 
     @Bean
     public Docket api() {
@@ -34,6 +47,8 @@ public class SwaggerConfig {
         parameters.add(parameterBuilder1);
 
         return new Docket(DocumentationType.SWAGGER_2)
+                .alternateTypeRules(AlternateTypeRules.newRule(typeResolver.resolve(Pageable.class), typeResolver.resolve(Page.class)))
+                .ignoredParameterTypes(UserDetails.class, CustomUserDetail.class)
                 .select()
                 .apis(RequestHandlerSelectors.any())
                 .paths(PathSelectors.any())
@@ -69,5 +84,20 @@ public class SwaggerConfig {
                 .description("TeamSuperCat API 리스트입니다.")
                 .version("0.1")
                 .build();
+    }
+
+
+    @Getter
+    @Setter
+    @ApiModel
+    static class Page {
+        @ApiModelProperty(value = "페이지 번호(0..N)")
+        private Integer page;
+
+        @ApiModelProperty(value = "페이지 크기", allowableValues="range[0, 100]")
+        private Integer size;
+
+        @ApiModelProperty(value = "정렬(사용법: 컬럼명,ASC|DESC)")
+        private List<String> sort;
     }
 }
