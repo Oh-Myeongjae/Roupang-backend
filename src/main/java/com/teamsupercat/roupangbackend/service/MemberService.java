@@ -17,6 +17,7 @@ import com.teamsupercat.roupangbackend.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -35,7 +36,7 @@ public class MemberService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final LoginFailRepository loginFailRepository;
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public ResponseDto<?> createMember(@RequestBody SignupRequestDto signupRequestDto) {
 
         boolean emailCheck = memberRepository.existsByEmail(signupRequestDto.getEmail());
@@ -66,8 +67,8 @@ public class MemberService {
     }
 
     @Transactional(noRollbackFor = {CustomException.class})
-    public ResponseDto<?> loginMember(LoginRequestDto loginRequestDto, HttpServletRequest request, HttpServletResponse response){
-        String domain = request.getRemoteAddr();
+    public ResponseDto<?> loginMember(LoginRequestDto loginRequestDto, HttpServletRequest request, HttpServletResponse response) {
+        String domain = getUserIp(request);
         Member member = memberRepository.findByEmail(loginRequestDto.getEmail())
                 .orElseThrow(() -> new CustomException(ErrorCode.LOGIN_NOT_FOUND_EMAIL));
 
@@ -152,8 +153,37 @@ public class MemberService {
         return now.isAfter(loginAttempt.getAllowedLoginTime());
     }
 
-    @Transactional
-    public void save (LoginAttempt loginAttempt) {
-       loginFailRepository.save(loginAttempt);
+    public String getUserIp(HttpServletRequest request){
+
+        String ip = null;
+
+        ip = request.getHeader("X-Forwarded-For");
+
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-RealIP");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("REMOTE_ADDR");
+        }
+        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+
+        return ip;
     }
 }
